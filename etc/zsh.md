@@ -11,6 +11,9 @@ $ brew update
 $ brew install zsh
 $ zsh --version
 ```
+#### 단축키
+* `cmd + t` 새탭
+* `cmd + w` 탭 닫기
 
 
 ### Install Oh My Zsh
@@ -46,3 +49,7 @@ $ source ~/.zshrc
 ```zsh
 plugins=(git osx python pip github zsh-autosuggestions zsh-syntax-highlighting)
 ```
+
+### iterm2 한글 깨질시
+폰트 다운받아서 해결  
+https://hjh5488.tistory.com/2
