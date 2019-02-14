@@ -41,3 +41,8 @@ $ rm ~/.zshrc
 $ cp ~/.zshrc.pre-oh-my-zsh ~/.zshrc
 $ source ~/.zshrc
 ```
+
+### plugins
+```zsh
+plugins=(git osx python pip github zsh-autosuggestions zsh-syntax-highlighting)
+```

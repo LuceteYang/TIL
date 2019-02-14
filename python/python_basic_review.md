@@ -1,5 +1,19 @@
 # 파이썬 문법 복습
-
+### Anaconda
+* 파이썬 **`패키지 매니저`**(package manager) 와 **`개발환경 매니저`** (enviroment manager) 
+* 간단하게 예를 들면, `pip`과 `venv`의 기능을 동시에 제공. 
+* Conda는 Anaconda라는 Continuum Analytics에서 만든 파이썬 배포판에 포함되어 있다. 
+* Anaconda는 데이터 분석 및 사이언스에 특화된 파이썬 배포판으로 Numpy, SciPy 등등 수학, 과학, 데이터 분석 분야의 패키지들, 그리고 그 외에도 여러가지의 널리 사용되는 파이썬 패키지가 종합적으로 미리 설치되어 나온다. Conda는 Anaconda에 포함되어 있는 패키지 매니저 및 개발환경 매니저 이다. 
+    * Anaconda의 단점은 너무 무겁다는 것이다 (CLI 버젼이 523MB).
+    * 만일 데이터 사이언스 프로젝트를 한다면 Anaconda를 설치하는 것이 좋다.
+    * 하지만 그렇지 않다면 Conda만으로 충분하다. Conda는 Minoconda를 설치하면 된다. 
+* https://conda.io/miniconda.html
+```bash
+conda create --name test python=3.6
+conda info --envs
+conda activate test
+conda deactivate
+```
 
 ### print
 ```python
@@ -181,6 +195,9 @@ print(s3)   # 하나하다하라하마
 ```
 
 ### 리스트 List
+사용 용도
+- index 접근 할 경우 
+- 빨리 삽입이 되야할때
 ```python
 # listslice
 nums = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
@@ -243,19 +260,40 @@ list(map(lambda x:x /2, score))
 ```
 
 ### 튜플 Tuple
-초기화한 후 편집할수 없다. 상수 리스트
-메모리 속도가 빠르다
-편집되지 않을 리스트일 경우 변경 불가능 하기때문에 안전하다.
+- 초기화한 후 편집할수 없다. 상수 리스트
+- 리스트에 비해서 조금 더 공간 효율적이기 때문에 메모리 속도가 빠르다
+- 편집되지 않을 리스트일 경우 변경 불가능 하기때문에 안전하다.
+
+- 취약점 :  요소의 형식이 통일하지 않을수 있음
+- 보완 : Namedtuple 각 위치의 의미를 명시적으로 작성
+- 튜플은 딕셔너리의 키로 사용할 수 있다.
+- 네임드 튜플(named tuple)은 객체의 단순한 대안이 될 수 있다. 
+- 함수 인자들은 튜플로 전달된다.
 ```python
 score = (88, 95, 100, 99)
 scores = 88, 95, 100, 99
 
 a, b, c, d = scores #unpacking
 
+import collections
+
+Person = collections.namedtuple("Person", 'name age gender')
+P1 = Person(name='Jhon', age=28, gender='남')
+P2 = Person(name='Sally', age=28, gender='여')
+for n in [P1, P2]:
+print('%s는(은) %d세의 %s성 입니다.' %n)
+'''
+결과
+Jhon는(은) 28세의 남성 입니다.
+Sally는(은) 28세의 여성 입니다.
+'''
+
 ```
 
 ### 사전 Dictionary
-키와 값의 쌍을 저장하는 애용량 자료구조
+키와 값의 쌍을 저장하는 대용량 자료구조  
+동일한 key 넣을수없음 (hash값으로 저장하기때문에)  
+JSON 라이브러리로 dictionary를 text로 바꿀수있다.  
 ```python
 dic = dict()
 dic = {'boy':'소년',"girl":"소녀"}
@@ -271,7 +309,11 @@ list(dic.items())   #list로 변환
 ```
 
 ### 집합 Set
-키의 중복을 허락하지 않으며 순서도 의미 없는 모임
+키의 중복을 허락하지 않으며 순서도 의미 없는 모임  
+**단점**  
+해쉬값을 한번 계산하고 삽입해야해서 좀 느림  
+**실제 예 데이터**   
+여러 전화번호 그룹에서 중복된거를 뺄때
 ```python
 sets = {'abc','def','ghi'}
 set("abc")
@@ -404,24 +446,42 @@ korando = Car("코란도")
 Car.count   # 2
 Car.hello() # 오늘도 안전 운행 합시다.
 
-# decorator
-class Outer:
-    def __init__(self, func):
-        self.func = func
+```
+#### Decorators
+* 어떠한 함수가 실행되기 전에 실행하고 싶은 함수를 편리하게 지정할 수 있는 기능.
+* 주로 공통적으로 항상 먼저 실행되어야 하는 코드가 있을때 사용함. 
+    * Authentication / Autorization
+먼저 실행되고 다음 함수가 실행됨
+1. 관계 강제성
+2. 가독성
+함수 안에 인자도 사용가능
 
-    def __call__(self, *args, **kwargs):
-        print("-" * 20)
-        self.func(*args, **kwargs)
-        print("-" * 20)
+```python
+from functools import wraps
+
+def test_decorator(f):
+     @wraps(f)
+     def decorated_function(*args, **kwargs):
+         print("Decorated Function")
+         return f(*args, **kwargs)
+     return decorated_function
 
 
-@Outer
-def inner(title):
-    print(title + "를 출력합니다.")
+@test_decorator
+ def func():
+     print("Calling func function")
 
 
-inner("타이틀")
+func()
+# Decorated Function
+# Calling func function
 
+def func2():
+     print("Calling func 2 function")
+
+
+func2()
+# Calling func 2 function
 ```
 
 ### module
