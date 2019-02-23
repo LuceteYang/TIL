@@ -1,0 +1,17 @@
+{
+  "name": "origin-response-function",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dockerbuild": "rm -rf node_modules/sharp && docker run -v \"$PWD\":/var/task lambci/lambda:build-nodejs8.10 npm install",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "querystring": "^0.2.0",
+    "sharp": "^0.20.1"
+  }
+}
