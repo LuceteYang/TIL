@@ -51,5 +51,9 @@ plugins=(git osx python pip github zsh-autosuggestions zsh-syntax-highlighting)
 ```
 
 ### iterm2 한글 깨질시
-폰트 다운받아서 해결  
-https://hjh5488.tistory.com/2
+1. 폰트 다운받아서 해결  
+https://hjh5488.tistory.com/2  
+2. `~/.bash_profile` 나 `~/.zshrc` 에서 LANG 설정
+```vi
+export LANG=en_US.UTF-8
+```
