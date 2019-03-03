@@ -1,119 +1,233 @@
-from flask         import Flask, jsonify, request, g, Response, current_app
-from sqlalchemy    import create_engine, text
-from datetime      import datetime, timedelta
-from flask_cors import CORS
+import jwt
+import bcrypt
 
-#####################################
-# Library
-####################################
-def create_user(new_user):
+from flask      import Flask, request, jsonify, current_app, Response, g
+from flask.json import JSONEncoder
+from sqlalchemy import create_engine, text
+from datetime   import datetime, timedelta
+from functools  import wraps
+
+## Default JSON encoder는 set를 JSON으로 변환할 수 없다.
+## 그럼으로 커스텀 엔코더를 작성해서 set을 list로 변환하여
+## JSON으로 변환 가능하게 해주어야 한다.
+class CustomJSONEncoder(JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, set):
+            return list(obj)
+
+        return JSONEncoder.default(self, obj)
+
+def get_user(user_id):
+    user = current_app.database.execute(text("""
+        SELECT 
+            id,
+            name,
+            email,
+            profile
+        FROM users
+        WHERE id = :user_id
+    """), {
+        'user_id' : user_id 
+    }).fetchone()
+
+    return {
+        'id'      : user['id'],
+        'name'    : user['name'],
+        'email'   : user['email'],
+        'profile' : user['profile']
+    } if user else None
+
+def insert_user(user):
     return current_app.database.execute(text("""
         INSERT INTO users (
             name,
             email,
-            hashed_password,
-            account_id
-        ) SELECT 
+            profile,
+            hashed_password
+        ) VALUES (
             :name,
             :email,
-            :password,
-            accnt.id
-        FROM accounts as accnt
-        WHERE accnt.account_type = :account_type
-    """), new_user).rowcount
+            :profile,
+            :password
+        )
+    """), user).lastrowid
 
-def get_all_users():
-    rows = current_app.database.execute(text(""" 
-        SELECT  
-            u.id,
-            u.name,
-            u.email,
-            accnt.account_type
-        FROM users as u 
-        JOIN accounts accnt ON u.account_id = accnt.id 
-    """)).fetchall()
+def insert_tweet(user_tweet):
+    return current_app.database.execute(text("""
+        INSERT INTO tweets (
+            user_id,
+            tweet
+        ) VALUES (
+            :id,
+            :tweet
+        )
+    """), user_tweet).rowcount
 
-    return [{ 
-        'id'           : row['id'],
-        'name'         : row['name'],
-        'email'        : row['email'],
-        'account_type' : row['account_type']
-    } for row in rows]
+def insert_follow(user_follow):
+    return current_app.database.execute(text("""
+        INSERT INTO users_follow_list (
+            user_id,
+            follow_user_id
+        ) VALUES (
+            :id,
+            :follow
+        )
+    """), user_follow).rowcount
 
-def get_user_info(id):
-    sql = text("""
+def insert_unfollow(user_unfollow):
+    return current_app.database.execute(text("""
+        DELETE FROM users_follow_list
+        WHERE user_id = :id
+        AND follow_user_id = :unfollow
+    """), user_unfollow).rowcount
+
+def get_timeline(user_id):
+    timeline = current_app.database.execute(text("""
+        SELECT 
+            t.user_id,
+            t.tweet
+        FROM tweets t
+        LEFT JOIN users_follow_list ufl ON ufl.user_id = :user_id
+        WHERE t.user_id = :user_id 
+        OR t.user_id = ufl.follow_user_id
+    """), {
+        'user_id' : user_id 
+    }).fetchall()
+
+    return [{
+        'user_id' : tweet['user_id'],
+        'tweet'   : tweet['tweet']
+    } for tweet in timeline]
+
+def get_user_id_and_password(email):
+    row = current_app.database.execute(text("""    
         SELECT
-            u.id,
-            u.name,
-            u.email,
-            accnt.account_type
-        FROM users as u 
-        JOIN accounts accnt ON u.account_id = accnt.id 
-        WHERE u.id = :id
-    """)
-    parameters = {'id' : id}
-    row        = current_app.database.execute(sql, parameters).fetchone()
+            id,
+            hashed_password
+        FROM users
+        WHERE email = :email
+    """), {'email' : email}).fetchone()
 
     return {
-        'id'           : row['id'],
-        'name'         : row['name'],
-        'email'        : row['email'],
-        'account_type' : row['account_type']
-    }  if row else None
+        'id'              : row['id'],
+        'hashed_password' : row['hashed_password']
+    } if row else None
 
+#########################################################
+#       Decorators
+#########################################################
+def login_required(f):      
+    @wraps(f)                   
+    def decorated_function(*args, **kwargs):
+        access_token = request.headers.get('Authorization') 
+        if access_token is not None:  
+            try:
+                payload = jwt.decode(access_token, current_app.config['JWT_SECRET_KEY'], 'HS256') 
+            except jwt.InvalidTokenError:
+                 payload = None     
 
-#####################################
-# Flask App
-####################################
+            if payload is None: return Response(status=401)  
+
+            user_id   = payload['user_id']  
+            g.user_id = user_id
+            g.user    = get_user(user_id) if user_id else None
+        else:
+            return Response(status = 401)  
+
+        return f(*args, **kwargs)
+    return decorated_function
+
 def create_app(test_config = None):
     app = Flask(__name__)
 
-    CORS(app)
+    app.json_encoder = CustomJSONEncoder
 
     if test_config is None:
         app.config.from_pyfile("config.py")
     else:
         app.config.update(test_config)
 
-    database = create_engine(
-      app.config['DB_URL'], 
-      encoding = 'utf-8', 
-      max_overflow = 0)
+    database     = create_engine(app.config['DB_URL'], encoding = 'utf-8', max_overflow = 0)
     app.database = database
 
-    ################################
-    # End Points
-    ################################
-
-    @app.route('/ping', methods=['GET'])
+    @app.route("/ping", methods=['GET'])
     def ping():
         return "pong"
 
-    @app.route('/users', methods=['GET'])
-    def all_users():
-        return jsonify(get_all_users())
+    @app.route("/sign-up", methods=['POST'])
+    def sign_up():
+        new_user    = request.json
+        new_user['password'] = bcrypt.hashpw(
+            new_user['password'].encode('UTF-8'),
+            bcrypt.gensalt()
+        )
 
-    @app.route('/user/<int:id>', methods=['GET']) ## /user/1 
-    def get_user(id):
-        row = get_user_info(id)
+        new_user_id = insert_user(new_user)
+        new_user    = get_user(new_user_id)
 
+        return jsonify(new_user)
+        
+    @app.route('/login', methods=['POST'])
+    def login():
+        credential      = request.json
+        email           = credential['email']
+        password        = credential['password']
+        user_credential = get_user_id_and_password(email)
+
+        if user_credential and bcrypt.checkpw(password.encode('UTF-8'), user_credential['hashed_password'].encode('UTF-8')): 
+            user_id = user_credential['id'] 
+            payload = {     
+                'user_id' : user_id,
+                'exp'     : datetime.utcnow() + timedelta(seconds = 60 * 60 * 24)
+            }
+            token = jwt.encode(payload, app.config['JWT_SECRET_KEY'], 'HS256') 
+
+            return jsonify({        
+                'access_token' : token.decode('UTF-8')
+            })
+        else:
+            return '', 401
+
+    @app.route('/tweet', methods=['POST'])
+    @login_required
+    def tweet():
+        user_tweet       = request.json
+        user_tweet['id'] = g.user_id
+        tweet            = user_tweet['tweet']
+
+        if len(tweet) > 300:
+            return '300자를 초과했습니다', 400
+
+        insert_tweet(user_tweet)
+
+        return '', 200
+
+    @app.route('/follow', methods=['POST'])
+    @login_required
+    def follow():
+        payload       = request.json
+        payload['id'] = g.user_id
+
+        insert_follow(payload) 
+
+        return '', 200
+
+    @app.route('/unfollow', methods=['POST'])
+    @login_required
+    def unfollow():
+        payload       = request.json
+        payload['id'] = g.user_id
+
+        insert_unfollow(payload)
+
+        return '', 200
+
+    @app.route('/timeline/<int:user_id>', methods=['GET'])
+    def timeline(user_id):
         return jsonify({
-            'id'           : row['id'],
-            'name'         : row['name'],
-            'email'        : row['email'],
-            'account_type' : row['account_type']
-        })  if row else ('', 404)
-
-    @app.route('/user', methods=['POST'])
-    def create_user_endpoint():
-        new_user = request.json
-        rowcount = create_user(new_user)
-
-        return jsonify(get_all_users()) if rowcount == 1 else ('', 500)
+            'user_id'  : user_id,
+            'timeline' : get_timeline(user_id)
+        })
 
     return app
 
-if __name__ == '__main__':
-  app = create_app()
-
-  app.run(debug=True)
