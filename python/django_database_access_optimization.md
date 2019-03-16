@@ -46,6 +46,26 @@ filter(), exclude(), order_by() 등을 사용하여 자주 쿼리하는 필드�
 - 데이터베이스에서 aggregation을 하기 위해 어노테이션하는 경우
 - RawSQL 일부 SQL을 쿼리에 명시적으로 추가할 수 있습니다.
 - 그래도 부족할 경우, 완전하게 raw SQL를 사용할 수도 있습니다.
+```python
+    with connection.cursor() as cursor:
+        cursor.execute('SELECT * FROM myapp_person WHERE parent_id=%s', [None]) # 파라미터 타입과 상관없이 %s
+        cursor.fetchall()	# ((54360982, None), (54360880, None))
+        dictfetchall(cursor)	# [{'parent_id': None, 'id': 54360982}, {'parent_id': None, 'id': 54360880}]
+
+    c = connection.cursor()
+	try:
+	    c.execute(...)
+	finally:
+	    c.close()
+
+def dictfetchall(cursor):
+    "Return all rows from a cursor as a dict"
+    columns = [col[0] for col in cursor.description]
+    return [
+        dict(zip(columns, row))
+        for row in cursor.fetchall()
+    ]
+```
 
 ```python
 # 일반적인 연산

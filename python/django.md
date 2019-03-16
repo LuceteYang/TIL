@@ -243,4 +243,17 @@ https://tutorial-extensions.djangogirls.org/ko/optional_postgresql_installation/
 #### db 내 데이터 다 지우기
 python manage.py flush
 
+#### custom template filter
+https://docs.djangoproject.com/en/dev/howto/custom-template-tags/
+
+#### humanize 적용
+https://simpleisbetterthancomplex.com/tips/2016/05/09/django-tip-2-humanize.html 
+
+#### DB에 timezone utc 시간이 저장되는경우
+
+```python
+# setting.py
+USE_TZ = False
+```
+
 
