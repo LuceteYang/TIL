@@ -57,12 +57,12 @@ Step 2: 아래 그림과 같이 설정후 생성해줍니다.
 ## 3. Node.js 패키징하기
 ```zsh
 $ mkdir origin-response-function
-$ cd origin-response-function
-$ wget https://raw.githubusercontent.com/LuceteYang/TIL/master/aws/source/index.js
-$ wget https://raw.githubusercontent.com/LuceteYang/TIL/master/aws/source/package.json
-$ npm install;
+$ wget https://raw.githubusercontent.com/LuceteYang/TIL/master/aws/source/index.js -P ./origin-response-function
+$ wget https://raw.githubusercontent.com/LuceteYang/TIL/master/aws/source/Dockerfile
+$ docker build --tag centos:nodejs .
+$ docker run --rm --volume ${PWD}/origin-response-function:/build centos:nodejs /bin/bash -c "source ~/.bashrc; npm init -f -y; npm install sharp@0.20.8 --save; npm install querystring@0.2.0 --save; npm install --only=prod"
 # index.js파일에서 BUCKET_NAME을 본인이 생성한 **`BUCKET 이름`** 으로 수정해준다.
-$ zip -FS -q -r ../origin-response-function.zip *
+$ zip -FS -q -r ./origin-response-function.zip ./origin-response-function/*
 ```
 origin-response-function 폴더 밖에 origin-response-function.zip이 생겼다면 이제 그 zip파일을 Lamda함수 생성시 넣어주면 된다.  
 > [!메모]
