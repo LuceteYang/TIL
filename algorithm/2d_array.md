@@ -65,3 +65,18 @@ The hourglass with the maximum sum () is:
 1 2 4
 
 ```
+
+## 풀이코드
+
+```javascript
+let maxSum;
+for (let i = 1; i < arr.length-1; i++){
+    for (let j = 1; j < arr[0].length-1; j++){
+        let sum = arr[i - 1][j - 1] + arr[i -1][j] + arr[i - 1][j + 1] + arr[i][j] + arr[i + 1][j - 1] + arr[i + 1][j] + arr[i +1 ][j + 1]
+        if (typeof maxSum === "undefined" || sum > maxSum) {
+            maxSum = sum;
+        }
+    }
+}
+return maxSum;
+```
