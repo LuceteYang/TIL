@@ -66,3 +66,42 @@ Explanation 2
 
 The special palindromic substrings of  are 
 ```
+
+## 내가 했던 풀이
+```python
+from math import floor
+
+def substrCount(n, s):
+    count = n
+    for i in range(2, n+1):
+        for j in range(0, n-i+1):
+            string  = s[j:i+j]
+            if i % 2 == 1:
+                string = string[:floor(i/2)] + string[round(i/2):]
+            string = string.replace(string[0],"")
+            if len(string)==0:
+                count+= 1
+    return count
+```
+
+## 다른 사람 풀이 코드
+```python
+def substrCount(n, s):
+    count = len(s)
+    for i, char in enumerate(s):
+        diff_char_idx = None
+        for j in range(i+1, n):
+            if char == s[j]:
+                if diff_char_idx is None:
+                    count +=1
+                elif j - diff_char_idx == diff_char_idx - i:
+                    count += 1
+                    break
+            else:
+                if diff_char_idx is None:
+                    diff_char_idx = j
+                else:
+                    break
+    return count
+
+```
