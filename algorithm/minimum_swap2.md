@@ -80,3 +80,36 @@ After swapping  we get
 So, we need a minimum of  swaps to sort the array in ascending order.
 ```
 
+## 풀이 코드
+```javascript
+var rotArr = Object.values(Object.assign({}, arr));
+var minVal;
+var maxVal = Math.max(...rotArr);
+var minValInd;
+var currentVal;
+var swapCount = 0;
+
+for(var i = 0; i < rotArr.length; i++){
+    // get minimum values
+    minVal = Math.min(...arr);
+
+    if(minVal === rotArr[i]){
+        arr.shift()
+        continue;
+    }
+
+    minValInd = rotArr.indexOf(minVal);
+
+    currentVal = rotArr[i];
+    rotArr[i] = rotArr[minValInd];
+    rotArr[minValInd] = currentVal;
+
+    arr = Object.values(Object.assign({}, rotArr.slice(i)));
+    arr.shift();
+
+    minVal = Math.min(...arr);
+    swapCount = swapCount +1;
+}
+
+return swapCount;
+```
