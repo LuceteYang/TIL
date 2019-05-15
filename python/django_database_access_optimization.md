@@ -110,6 +110,12 @@ b = e.blog
 prefetch_related는 select_related와 비슷하지만 select_related가 ‘1 대 1’ 관계 
 (외래키나 다른 ‘1 대 1’ 관계)에서만 사용 가능하다면 prefetch_related는 ‘1 대 다’ 혹은 ‘다 대 다’에도 사용 가능합니다.
 
+- select_related()
+  - ForeignKey, OneToOneField 관계에서 활용
+  - ForeignKey/OneToOneField 관계에서 Lazy하게 쿼리하지 않고, DB단에서 INNER JOIN 으로 쿼리할 수 있다.
+- prefetch_related()
+  - ManyToManyField, ForeignKey의 reverse relation 에서 활용
+  - 각 관계 별로 DB 쿼리를 수행하고, 파이썬 단에서 조인을 수행한다.
 
 
 6. 필요없는 항목은 검색하지 마세요
