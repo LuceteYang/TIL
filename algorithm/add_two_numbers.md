@@ -38,7 +38,6 @@ class Solution:
             result.next = self.addTwoNumbers(l1.next,l2.next)
         return result
 ```
-Time complexity : O(n^2)
 
 
 ## 다른 풀이
@@ -62,5 +61,4 @@ class Solution:
             ret.next = self.addTwoNumbers(l1.next,l2.next,c)
         return ret
 ```
-Time complexity : O(n)
 
