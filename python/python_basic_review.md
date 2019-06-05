@@ -15,6 +15,14 @@ conda activate test
 conda deactivate
 ```
 
+### Number
+```python
+print(3 ** 4) # 3 제곱4 = 81
+print(7 % 3) # 나머지 1
+print(7 / 4) # 1.75
+print(7 // 4) # 몫 1
+```
+
 ### print
 ```python
 print("hello world")    # hello world
@@ -66,6 +74,9 @@ for num in range(1,6):
 arr = ['first','second','third']
 for index in range(len(arr)):
     print(arr[index])
+
+for index, item in enumerate(arr):
+    print(item)
 
 ```
 ### 함수 function
@@ -192,6 +203,13 @@ s3 = "가나가다가라가마"
 s3 = s3.replace("가", "하")
 print(s3)   # 하나하다하라하마
 
+# 대문자 바꿈
+a = "hi"
+print(a.upper())    # HI
+
+# 소문자 바꿈
+a = "HI"
+print(a.lower())    # hi
 ```
 
 ### 리스트 List
