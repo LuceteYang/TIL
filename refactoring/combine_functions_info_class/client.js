@@ -18,6 +18,10 @@ class Reading {
 	get baseCharge() {	// 기본 요금 계산 함수
 		return baseRate(this.month, this.year) * this.quantity;
 	}
+
+	get taxableCharge() {
+		return Math.max(0, this.baseCharge - taxThreshold(this.year));
+	}
 }
 
 // Client1
@@ -29,7 +33,7 @@ const baseCharge = aReading.baseCharge;
 // Client2
 const rawReading = acquireReading();
 const aReading = new Reading(rawReading);
-const texableCharge = taxableChargeFn(rawReading);
+const taxableCharge = aReading.taxableCharge
 
 function taxableChargeFn(aReading) {
 	return Math.max(0, aReading.baseCharge - taxThreshold(aReading.year));
