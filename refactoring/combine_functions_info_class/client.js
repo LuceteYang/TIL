@@ -29,7 +29,11 @@ const baseCharge = aReading.baseCharge;
 // Client2
 const rawReading = acquireReading();
 const aReading = new Reading(rawReading);
-const texableCharge = Math.max(0, aReading.baseCharge - taxThreshold(aReading.year));
+const texableCharge = taxableChargeFn(rawReading);
+
+function taxableChargeFn(aReading) {
+	return Math.max(0, aReading.baseCharge - taxThreshold(aReading.year));
+}
 
 
 // Client3
