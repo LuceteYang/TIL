@@ -29,7 +29,8 @@ const texableCharge = Math.max(0, base - taxThreshold(aReading.year));
 
 
 // Client3
-const aReading = acquireReading();
+const rawReading = acquireReading();
+const aReading = new Reading(rawReading);
 const basicChargeAmount = calculateBaseCharge(aReading);
 
 function calculateBaseCharge(aReading) {	// 기본 요금 계산 함수
