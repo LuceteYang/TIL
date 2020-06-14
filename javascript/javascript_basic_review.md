@@ -103,7 +103,12 @@ for (i = 0; i < 10; i++) {
   - private variable에 접근하기 위해 scope chain을 따라가야 한다.
   - 이는 시간이 필요한 작업이므로, 바로 변수에 접근하는 것에 비해 추가적인 시간이 소요된다.
 
-
+### 참고 링크
+https://meetup.toast.com/posts/86
+- [JavaScript Closure는 왜 쓸까?]
+(https://medium.com/sjk5766/javascript-closure%EB%8A%94-%EC%99%9C-%EC%93%B8%EA%B9%8C-81bcdef6352)
+- [자바스크립트의 스코프와 클로저]
+(https://meetup.toast.com/posts/86)
 
 
 
