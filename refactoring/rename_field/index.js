@@ -1,6 +1,6 @@
 class Organization {
   constructor(data) {
-    this._title = data.name;
+    this._title = (data.title !== undefiend) ? data.title: data.name;
     this._country = data.country;
   }
   get name() {return this._title;}
